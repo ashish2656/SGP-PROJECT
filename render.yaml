@@ -3,10 +3,20 @@ services:
     name: job-portal-backend
     env: node
     buildCommand: cd backend && yarn install
-    startCommand: cd backend && node index.js
+    startCommand: cd backend && node --max-old-space-size=512 index.js
     envVars:
       - key: NODE_VERSION
         value: 18.0.0
       - key: MONGO_URL
         value: mongodb+srv://ashishdodiya5151:ashish5151@cluster0.ejj6xgn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-    healthCheckPath: /health 
+    healthCheckPath: /health
+    scaling:
+      minInstances: 1
+      maxInstances: 1
+    plan: free # Using free tier
+    autoscaling:
+      enabled: false
+    disk:
+      name: tmp
+      mountPath: /tmp
+      sizeGB: 1 

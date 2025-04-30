@@ -5,12 +5,13 @@ const connectDB = async () => {
         const options = {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000,
+            serverSelectionTimeoutMS: 30000, // Increased timeout
             socketTimeoutMS: 45000,
             family: 4, // Use IPv4, skip trying IPv6
             maxPoolSize: 10,
-            keepAlive: true,
-            keepAliveInitialDelay: 300000
+            // Removed keepAlive and keepAliveInitialDelay as they're no longer supported
+            connectTimeoutMS: 30000,
+            heartbeatFrequencyMS: 30000
         };
 
         // Clear any existing connections
@@ -24,12 +25,13 @@ const connectDB = async () => {
 
         mongoose.connection.on('error', (err) => {
             console.error('MongoDB connection error:', err);
-            setTimeout(connectDB, 5000);
+            // Don't retry immediately, add some delay
+            setTimeout(connectDB, 10000);
         });
 
         mongoose.connection.on('disconnected', () => {
             console.log('MongoDB disconnected. Attempting to reconnect...');
-            setTimeout(connectDB, 5000);
+            setTimeout(connectDB, 10000);
         });
 
         // Connect to MongoDB
@@ -37,7 +39,8 @@ const connectDB = async () => {
         console.log("Connected Successfully to MongoDB");
     } catch (err) {
         console.error("MongoDB connection error:", err);
-        setTimeout(connectDB, 5000);
+        // Don't retry immediately, add some delay
+        setTimeout(connectDB, 10000);
     }
 };
 
