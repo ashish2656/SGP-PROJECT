@@ -43,17 +43,22 @@ function Login() {
                         'Content-Type': 'application/json'
                     },
                     withCredentials: true,
+                    timeout: 10000
                 }
             );
 
             if (res.data.success) {
                 dispatch(setUser(res.data.user));
-                navigate("/");
                 toast.success(res.data.message);
+                navigate("/");
+            } else {
+                toast.error(res.data.message || "Login failed");
             }
         } catch (error) {
+            console.error("Login error:", error);
             const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
             toast.error(errorMessage);
+            dispatch(setUser(null));
         } finally {
             setIsSubmitting(false);
             dispatch(setLoading(false));
