@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const isDevelopment = import.meta.env.MODE === 'development';
+const API_BASE = isDevelopment 
+    ? 'http://localhost:8000/api/v1'
+    : 'https://job-portal-backend-3io2.onrender.com/api/v1';
 
 export const USER_API_END_POINT = `${API_BASE}/user`;
 export const JOB_API_END_POINT = `${API_BASE}/job`;
@@ -11,5 +14,5 @@ export const axiosConfig = {
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000 // 10 second timeout
+    timeout: 15000 // 15 second timeout for production
 };

@@ -9,38 +9,50 @@ import companyRoute from "./routes/company.rout.js"
 import jobRoute from "./routes/job.rout.js"
 import applicationRoute from "./routes/application.rout.js"
 
-dotenv.config({});
+dotenv.config();
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({extended : true}));
+// Increase the payload size limit
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 const corsOptions = {
-    origin: ["http://localhost:5173", "http://localhost:5174", "https://sgp-project.netlify.app", "https://sgp-project.netlify.com"],
+    origin: [
+        "http://localhost:5173", 
+        "http://localhost:5174", 
+        "https://sgp-project.netlify.app",
+        "https://onlinejo.netlify.app"
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
-    exposedHeaders: ['*', 'Authorization']
-}
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['set-cookie'],
+    preflightContinue: true,
+    optionsSuccessStatus: 204
+};
 
 app.use(cors(corsOptions));
 
 // Enable pre-flight requests for all routes
 app.options('*', cors(corsOptions));
 
-const PORT = process.env.PORT || 3000;
+// Connect to MongoDB
+connectDB();
+
+const PORT = process.env.PORT || 8000;
 
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ 
         status: 'healthy',
-        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString()
     });
 });
 
-// api's
+// API routes
 app.use("/api/v1/user", userRout);
 app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
@@ -55,48 +67,18 @@ app.use((err, req, res, next) => {
     });
 });
 
-let server;
-
-const startServer = async () => {
-    try {
-        await connectDB();
-        server = app.listen(PORT, () => {
-            console.log(`Server running at port ${PORT}`);
-        });
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
-    }
-};
-
 // Graceful shutdown
-const gracefulShutdown = () => {
-    console.log('Received shutdown signal. Starting graceful shutdown...');
-    if (server) {
-        server.close(async () => {
-            console.log('HTTP server closed.');
-            try {
-                await mongoose.connection.close();
-                console.log('MongoDB connection closed.');
-                process.exit(0);
-            } catch (err) {
-                console.error('Error during shutdown:', err);
-                process.exit(1);
-            }
+process.on('SIGTERM', () => {
+    console.info('SIGTERM signal received.');
+    server.close(() => {
+        console.log('Server closed.');
+        mongoose.connection.close(false, () => {
+            console.log('MongoDB connection closed.');
+            process.exit(0);
         });
-    }
-};
-
-// Handle process events
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-    gracefulShutdown();
-});
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    gracefulShutdown();
+    });
 });
 
-startServer();
+const server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
