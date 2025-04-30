@@ -9,71 +9,94 @@ dotenv.config();
 
 const createDemoData = async () => {
     try {
-        // Create demo recruiter
-        const hashedPassword = await bcrypt.hash('demo123', 10);
-        const demoRecruiter = await User.create({
-            fullname: 'Demo Recruiter',
-            email: 'demo@jobportal.com',
-            password: hashedPassword,
-            role: 'recruiter'
-        });
+        // Find or create demo recruiter
+        let recruiter = await User.findOne({ email: 'demo@jobportal.com' });
+        if (!recruiter) {
+            const hashedPassword = await bcrypt.hash('demo123', 10);
+            recruiter = await User.create({
+                fullname: 'Demo Recruiter',
+                email: 'demo@jobportal.com',
+                password: hashedPassword,
+                phoneNumber: '1234567890',
+                role: 'recruiter'
+            });
+        }
 
-        // Create demo company
-        const demoCompany = await Company.create({
-            name: 'Tech Solutions Inc',
-            description: 'Leading technology solutions provider',
-            website: 'https://techsolutions.com',
-            location: 'Mumbai, India',
-            created_by: demoRecruiter._id
-        });
-
-        // Create demo jobs
-        const demoJobs = [
+        // Create or update demo companies
+        const companyData = [
             {
-                title: 'Senior Frontend Developer',
-                description: 'Looking for an experienced Frontend Developer with React expertise',
-                requirements: ['React', 'JavaScript', 'TypeScript', '5+ years experience'],
-                salary: 1800000,
-                location: 'Mumbai, India',
-                jobType: 'Full-time',
-                position: 2,
-                experienceLevel: 5,
-                company: demoCompany._id,
-                created_by: demoRecruiter._id
+                name: 'Tech Solutions Inc',
+                description: 'Leading software development company',
+                website: 'https://techsolutions.com',
+                location: 'San Francisco',
+                created_by: recruiter._id
             },
             {
-                title: 'Backend Developer',
-                description: 'Node.js developer needed for building scalable APIs',
-                requirements: ['Node.js', 'MongoDB', 'Express', '3+ years experience'],
-                salary: 1500000,
-                location: 'Bangalore, India',
-                jobType: 'Full-time',
-                position: 3,
-                experienceLevel: 3,
-                company: demoCompany._id,
-                created_by: demoRecruiter._id
-            },
-            {
-                title: 'UI/UX Designer',
-                description: 'Creative designer needed for web and mobile applications',
-                requirements: ['Figma', 'Adobe XD', 'UI Design', 'UX Research'],
-                salary: 1200000,
-                location: 'Remote',
-                jobType: 'Full-time',
-                position: 1,
-                experienceLevel: 2,
-                company: demoCompany._id,
-                created_by: demoRecruiter._id
+                name: 'Digital Innovations',
+                description: 'Digital transformation and consulting',
+                website: 'https://digitalinnovations.com',
+                location: 'New York',
+                created_by: recruiter._id
             }
         ];
 
-        await Job.insertMany(demoJobs);
+        const companies = await Promise.all(
+            companyData.map(async (company) => {
+                const existingCompany = await Company.findOne({ name: company.name });
+                if (existingCompany) {
+                    return existingCompany;
+                }
+                return await Company.create(company);
+            })
+        );
 
-        console.log('Demo data created successfully!');
+        // Clear existing jobs
+        await Job.deleteMany({ created_by: recruiter._id });
+
+        // Create new demo jobs
+        await Job.create([
+            {
+                title: 'Senior Frontend Developer',
+                description: 'Looking for an experienced frontend developer with React expertise',
+                requirements: ['5+ years React experience', 'TypeScript', 'UI/UX knowledge'],
+                salary: 120000,
+                location: 'San Francisco',
+                jobType: 'Full-time',
+                experienceLevel: 5,
+                position: 2,
+                company: companies[0]._id,
+                created_by: recruiter._id
+            },
+            {
+                title: 'Backend Developer',
+                description: 'Backend developer with Node.js and MongoDB experience',
+                requirements: ['Node.js', 'MongoDB', 'API Design'],
+                salary: 110000,
+                location: 'New York',
+                jobType: 'Full-time',
+                experienceLevel: 3,
+                position: 3,
+                company: companies[1]._id,
+                created_by: recruiter._id
+            },
+            {
+                title: 'UI/UX Designer',
+                description: 'Creative designer with modern design principles knowledge',
+                requirements: ['Figma', 'Adobe XD', 'User Research'],
+                salary: 95000,
+                location: 'Remote',
+                jobType: 'Full-time',
+                experienceLevel: 2,
+                position: 1,
+                company: companies[0]._id,
+                created_by: recruiter._id
+            }
+        ]);
+
+        console.log('Demo data created successfully');
         console.log('Demo Login Details:');
         console.log('Email: demo@jobportal.com');
         console.log('Password: demo123');
-        
         process.exit(0);
     } catch (error) {
         console.error('Error creating demo data:', error);
