@@ -7,4 +7,6 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 18.0.0
+      - key: MONGO_URL
+        value: mongodb+srv://ashishdodiya5151:ashish5151@cluster0.ejj6xgn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
     healthCheckPath: /health 
