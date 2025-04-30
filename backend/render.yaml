@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: job-portal-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: MONGO_URL
+        value: mongodb+srv://ashishdodiya5151:BJuV5MlT7mS29kea@cluster0.ejj6xgn.mongodb.net/jobportal?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: jobportal-secret-key-sgp-project 
