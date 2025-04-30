@@ -17,6 +17,7 @@ import Postjob from "./components/admin/Postjob";
 import Applicants from "./components/admin/Applicants";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import UpdateJob from "./components/admin/UpdateJob";
+import MaskrComponent from "./components/MaskrComponent";
 
 const appRouter = createBrowserRouter([
   // user paths
@@ -47,6 +48,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile />,
+  },
+  {
+    path: "/maskr",
+    element: <MaskrComponent />,
   },
 
   // admin paths

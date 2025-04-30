@@ -61,6 +61,9 @@ function Navbar() {
                   <li>
                     <Link to="/browse" className="nav-link">Browse</Link>
                   </li>
+                  <li>
+                    <Link to="/maskr" className="nav-link">Maskr</Link>
+                  </li>
                 </>
               )}
             </ul>
