@@ -18,13 +18,21 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://sgp-project.netlify.app",
+    "https://onlinejo.netlify.app"
+];
+
 const corsOptions = {
-    origin: [
-        "http://localhost:5173", 
-        "http://localhost:5174", 
-        "https://sgp-project.netlify.app",
-        "https://onlinejo.netlify.app"
-    ],
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
@@ -33,9 +41,10 @@ const corsOptions = {
     optionsSuccessStatus: 204
 };
 
+// Enable CORS for all routes
 app.use(cors(corsOptions));
 
-// Enable pre-flight requests for all routes
+// Enable pre-flight requests
 app.options('*', cors(corsOptions));
 
 // Connect to MongoDB
@@ -61,6 +70,12 @@ app.use("/api/v1/application", applicationRoute);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
+    if (err.message === 'Not allowed by CORS') {
+        return res.status(403).json({
+            message: 'CORS Error: Origin not allowed',
+            success: false
+        });
+    }
     res.status(500).json({ 
         message: 'Something broke!',
         error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
