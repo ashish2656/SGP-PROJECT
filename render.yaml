@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: job-portal-backend
+    env: node
+    buildCommand: cd backend && yarn install
+    startCommand: cd backend && node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+    healthCheckPath: /health 
