@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { Loader2, User, Mail, Phone, Lock, Upload } from "lucide-react";
-import { setUser } from "@/redux/authSlice";
+import { setUser, setLoading } from "@/redux/authSlice";
 
 function Signup() {
   const [input, setInput] = useState({
@@ -52,8 +52,9 @@ function Signup() {
 
     try {
       setIsSubmitting(true);
+      dispatch(setLoading(true));
       const res = await axios.post(
-        `http://localhost:8000/api/v1/user/register`,
+        `${USER_API_END_POINT}/register`,
         formData,
         {
           headers: {
@@ -72,6 +73,7 @@ function Signup() {
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+      dispatch(setLoading(false));
     }
   };
 

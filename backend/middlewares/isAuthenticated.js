@@ -1,27 +1,26 @@
 import jwt from "jsonwebtoken";
 
 const isAuthenticated = async (req, res, next) => {
-    console.log('hyy');
     try {
         const token = req.cookies.token;
-        console.log(token);
+        
         if (!token) {
-            return res.status(401).json({ message: "Unauthorized", success: false });
+            return res.status(401).json({ message: "Please login first", success: false });
         }
 
-        
-
-        const decode = jwt.verify(token, process.env.SECRET_KEY);
-        if (!decode) {
-            return res.status(401).json({ message: "Unauthorized", success: false });
+        try {
+            const decode = jwt.verify(token, process.env.SECRET_KEY);
+            if (!decode) {
+                return res.status(401).json({ message: "Invalid token", success: false });
+            }
+            req.id = decode.userId;
+            next();
+        } catch (jwtError) {
+            return res.status(401).json({ message: "Invalid or expired token", success: false });
         }
-
-
-        req.id = decode.userId; // Attach user ID to request object for future use
-        next(); // Pass control to the next middleware or route handler
     } catch (err) {
-        console.log(err);
-        
+        console.error("Authentication error:", err);
+        return res.status(500).json({ message: "Internal server error", success: false });
     }
 };
 

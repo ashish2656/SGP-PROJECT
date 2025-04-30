@@ -34,8 +34,9 @@ function Login() {
 
         try {
             setIsSubmitting(true);
+            dispatch(setLoading(true));
             const res = await axios.post(
-                `http://localhost:8000/api/v1/user/login`,
+                `${USER_API_END_POINT}/login`,
                 input,
                 {
                     headers: {
@@ -55,6 +56,7 @@ function Login() {
             toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
+            dispatch(setLoading(false));
         }
     };
 

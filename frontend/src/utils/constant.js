@@ -10,5 +10,6 @@ export const axiosConfig = {
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
-    }
+    },
+    timeout: 10000 // 10 second timeout
 };
